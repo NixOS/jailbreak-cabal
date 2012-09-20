@@ -17,9 +17,5 @@ stripVersionRestrictions pkg = pkg { condLibrary = fmap f2 (condLibrary pkg)
                                    }
   where
     f1 (string,condTree) = (string, f2 condTree)
-    f2 ct = ct { condTreeConstraints = map f3 (condTreeConstraints ct)
-               , condTreeComponents = map traverseAST (condTreeComponents ct)
-               }
+    f2 ct = ct { condTreeConstraints = map f3 (condTreeConstraints ct) }
     f3 (Dependency d _) = Dependency d anyVersion
-
-    traverseAST (c, ct1, ct2) = (c, f2 ct1, fmap f2 ct2)
