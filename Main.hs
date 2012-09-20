@@ -22,4 +22,4 @@ stripVersionRestrictions pkg = pkg { condLibrary = fmap f2 (condLibrary pkg)
                }
     f3 (Dependency d _) = Dependency d anyVersion
 
-    traverseAST (c, ct1, ct2) = (c, ct1, fmap f2 ct2)
+    traverseAST (c, ct1, ct2) = (c, f2 ct1, fmap f2 ct2)
