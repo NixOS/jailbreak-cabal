@@ -14,6 +14,7 @@ main = getArgs >>= mapM_ (\cabalFile -> readPackageDescription silent cabalFile 
 stripVersionRestrictions :: GenericPackageDescription -> GenericPackageDescription
 stripVersionRestrictions pkg = pkg { condLibrary = fmap f2 (condLibrary pkg)
                                    , condExecutables = map f1 (condExecutables pkg)
+                                   , condTestSuites = map f1 (condTestSuites pkg)
                                    }
   where
     f1 (string,condTree) = (string, f2 condTree)
