@@ -12,11 +12,39 @@ main :: IO ()
 main = getArgs >>= mapM_ (\cabalFile -> readPackageDescription silent cabalFile >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions)
 
 stripVersionRestrictions :: GenericPackageDescription -> GenericPackageDescription
-stripVersionRestrictions pkg = pkg { condLibrary = fmap f2 (condLibrary pkg)
-                                   , condExecutables = map f1 (condExecutables pkg)
-                                   , condTestSuites = map f1 (condTestSuites pkg)
+stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLibrary pkg)
+                                   , condExecutables = map relaxTree (condExecutables pkg)
+                                   , condTestSuites = map relaxTree (condTestSuites pkg)
                                    }
   where
-    f1 (string,condTree) = (string, f2 condTree)
-    f2 ct = ct { condTreeConstraints = map f3 (condTreeConstraints ct) }
-    f3 (Dependency d _) = Dependency d anyVersion
+    relaxTree :: (t, CondTree v [Dependency] a) -> (t, CondTree v [Dependency] a)
+    relaxTree (string,condTree) = (string, relaxTreeConstraints condTree)
+
+    relaxTreeConstraints :: CondTree v [Dependency] a -> CondTree v [Dependency] a
+    relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct) }
+
+    relaxLibraryTree :: CondTree v [Dependency] Library -> CondTree v [Dependency] Library
+    relaxLibraryTree ct = relaxTreeConstraints $ ct { condTreeData = relaxLibrary (condTreeData ct) }
+
+    relaxExeTree :: CondTree v [Dependency] Executable -> CondTree v [Dependency] Executable
+    relaxExeTree ct = relaxTreeConstraints $ ct { condTreeData = relaxExe (condTreeData ct) }
+
+    relaxTestTree :: CondTree v [Dependency] TestSuite -> CondTree v [Dependency] TestSuite
+    relaxTestTree ct = relaxTreeConstraints $ ct { condTreeData = relaxTest (condTreeData ct) }
+
+    relaxLibrary :: Library -> Library
+    relaxLibrary l = l { libBuildInfo = relaxBuildInfo (libBuildInfo l) }
+
+    relaxExe :: Executable -> Executable
+    relaxExe e = e { buildInfo = relaxBuildInfo (buildInfo e) }
+
+    relaxTest :: TestSuite -> TestSuite
+    relaxTest t = t { testBuildInfo = relaxBuildInfo (testBuildInfo t) }
+
+    relaxBuildInfo :: BuildInfo -> BuildInfo
+    relaxBuildInfo bi = bi { buildTools = map relax (buildTools bi)
+                           , targetBuildDepends = map relax (targetBuildDepends bi)
+                           }
+
+    relax :: Dependency -> Dependency
+    relax (Dependency d _) = Dependency d anyVersion

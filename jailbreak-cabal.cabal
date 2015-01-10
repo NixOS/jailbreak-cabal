@@ -1,5 +1,5 @@
 Name:                   jailbreak-cabal
-Version:                1.1
+Version:                1.2
 Synopsis:               Strip version restrictions from build dependencies in Cabal files.
 License:                BSD3
 License-file:           LICENSE
@@ -9,9 +9,8 @@ Homepage:               http://github.com/peti/jailbreak-cabal
 Category:               Distribution
 Build-type:             Simple
 Cabal-version:          >= 1.6
-Tested-with:            GHC >= 6.10.4 && <= 7.8.3
-Description:
- Strip version restrictions from build dependencies in Cabal files.
+Tested-with:            GHC >= 6.10.4 && <= 7.10.1
+Description:            Strip version restrictions from build dependencies in Cabal files.
 
 Source-Repository head
   Type:                 git
@@ -19,5 +18,4 @@ Source-Repository head
 
 Executable jailbreak-cabal
   Main-is:              Main.hs
-  Build-depends:        base >= 3 && < 5, Cabal >= 1.12.0
-  Ghc-Options:          -Wall
+  Build-depends:        base >= 3 && < 5, Cabal > 1.18
