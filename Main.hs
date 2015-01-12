@@ -20,8 +20,14 @@ stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLi
     relaxTree :: (t, CondTree v [Dependency] a) -> (t, CondTree v [Dependency] a)
     relaxTree (string,condTree) = (string, relaxTreeConstraints condTree)
 
+    relaxComponent :: (Condition v, CondTree v [Dependency] a, Maybe (CondTree v [Dependency] a))
+                   -> (Condition v, CondTree v [Dependency] a, Maybe (CondTree v [Dependency] a))
+    relaxComponent (c, ct, ct') = (c, relaxTreeConstraints ct, fmap relaxTreeConstraints ct')
+
     relaxTreeConstraints :: CondTree v [Dependency] a -> CondTree v [Dependency] a
-    relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct) }
+    relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct)
+                                 , condTreeComponents = map relaxComponent (condTreeComponents ct)
+                                 }
 
     relaxLibraryTree :: CondTree v [Dependency] Library -> CondTree v [Dependency] Library
     relaxLibraryTree ct = relaxTreeConstraints $ ct { condTreeData = relaxLibrary (condTreeData ct) }
