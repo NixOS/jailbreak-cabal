@@ -13,13 +13,10 @@ main = getArgs >>= mapM_ (\cabalFile -> readPackageDescription silent cabalFile 
 
 stripVersionRestrictions :: GenericPackageDescription -> GenericPackageDescription
 stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLibrary pkg)
-                                   , condExecutables = map relaxTree (condExecutables pkg)
-                                   , condTestSuites = map relaxTree (condTestSuites pkg)
+                                   , condExecutables = map (fmap relaxExeTree) (condExecutables pkg)
+                                   , condTestSuites = map (fmap relaxTestTree) (condTestSuites pkg)
                                    }
   where
-    relaxTree :: (t, CondTree v [Dependency] a) -> (t, CondTree v [Dependency] a)
-    relaxTree (string,condTree) = (string, relaxTreeConstraints condTree)
-
     relaxTreeConstraints :: CondTree v [Dependency] a -> CondTree v [Dependency] a
     relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct) }
 
