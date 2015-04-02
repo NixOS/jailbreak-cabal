@@ -11,6 +11,8 @@ import System.Environment
 main :: IO ()
 main = getArgs >>= mapM_ (\cabalFile -> readPackageDescription silent cabalFile >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions)
 
+-- We don't relax version restrictions inside conditional statements.
+-- See https://github.com/peti/jailbreak-cabal/commit/99eac40deb481b185fd93fd307625369ff5e1ec0
 stripVersionRestrictions :: GenericPackageDescription -> GenericPackageDescription
 stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLibrary pkg)
                                    , condExecutables = map (fmap relaxExeTree) (condExecutables pkg)
