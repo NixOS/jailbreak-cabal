@@ -1,11 +1,17 @@
+{-# LANGUAGE CPP #-}
+
 module Main ( main ) where
 
 import Distribution.Package
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Parse
 import Distribution.PackageDescription.PrettyPrint
-import Distribution.Version
+#if MIN_VERSION_Cabal(1,25,0)
+import Distribution.Types.Dependency
+import Distribution.Types.LegacyExeDependency
+#endif
 import Distribution.Verbosity
+import Distribution.Version
 import System.Environment
 
 main :: IO ()
@@ -18,32 +24,42 @@ stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLi
                                    , condExecutables = map (fmap relaxExeTree) (condExecutables pkg)
                                    , condTestSuites = map (fmap relaxTestTree) (condTestSuites pkg)
                                    }
-  where
-    relaxTreeConstraints :: CondTree v [Dependency] a -> CondTree v [Dependency] a
-    relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct) }
 
-    relaxLibraryTree :: CondTree v [Dependency] Library -> CondTree v [Dependency] Library
-    relaxLibraryTree ct = relaxTreeConstraints $ ct { condTreeData = relaxLibrary (condTreeData ct) }
+relaxTreeConstraints :: CondTree v [Dependency] a -> CondTree v [Dependency] a
+relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct) }
 
-    relaxExeTree :: CondTree v [Dependency] Executable -> CondTree v [Dependency] Executable
-    relaxExeTree ct = relaxTreeConstraints $ ct { condTreeData = relaxExe (condTreeData ct) }
+relaxLibraryTree :: CondTree v [Dependency] Library -> CondTree v [Dependency] Library
+relaxLibraryTree ct = relaxTreeConstraints $ ct { condTreeData = relaxLibrary (condTreeData ct) }
 
-    relaxTestTree :: CondTree v [Dependency] TestSuite -> CondTree v [Dependency] TestSuite
-    relaxTestTree ct = relaxTreeConstraints $ ct { condTreeData = relaxTest (condTreeData ct) }
+relaxExeTree :: CondTree v [Dependency] Executable -> CondTree v [Dependency] Executable
+relaxExeTree ct = relaxTreeConstraints $ ct { condTreeData = relaxExe (condTreeData ct) }
 
-    relaxLibrary :: Library -> Library
-    relaxLibrary l = l { libBuildInfo = relaxBuildInfo (libBuildInfo l) }
+relaxTestTree :: CondTree v [Dependency] TestSuite -> CondTree v [Dependency] TestSuite
+relaxTestTree ct = relaxTreeConstraints $ ct { condTreeData = relaxTest (condTreeData ct) }
 
-    relaxExe :: Executable -> Executable
-    relaxExe e = e { buildInfo = relaxBuildInfo (buildInfo e) }
+relaxLibrary :: Library -> Library
+relaxLibrary l = l { libBuildInfo = relaxBuildInfo (libBuildInfo l) }
 
-    relaxTest :: TestSuite -> TestSuite
-    relaxTest t = t { testBuildInfo = relaxBuildInfo (testBuildInfo t) }
+relaxExe :: Executable -> Executable
+relaxExe e = e { buildInfo = relaxBuildInfo (buildInfo e) }
 
-    relaxBuildInfo :: BuildInfo -> BuildInfo
-    relaxBuildInfo bi = bi { buildTools = map relax (buildTools bi)
-                           , targetBuildDepends = map relax (targetBuildDepends bi)
-                           }
+relaxTest :: TestSuite -> TestSuite
+relaxTest t = t { testBuildInfo = relaxBuildInfo (testBuildInfo t) }
 
-    relax :: Dependency -> Dependency
-    relax (Dependency d _) = Dependency d anyVersion
+relaxBuildInfo :: BuildInfo -> BuildInfo
+relaxBuildInfo bi = bi { buildTools = map relax (buildTools bi)
+                       , targetBuildDepends = map relax (targetBuildDepends bi)
+                       }
+
+class DependencyType a where
+  relax :: a -> a
+
+instance DependencyType Dependency where
+  relax (Dependency d _) = Dependency d anyVersion
+
+#if MIN_VERSION_Cabal(1,25,0)
+
+instance DependencyType LegacyExeDependency where
+  relax (LegacyExeDependency d _) = LegacyExeDependency d anyVersion
+
+#endif
