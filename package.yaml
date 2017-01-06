@@ -12,7 +12,7 @@ license-file:   LICENSE
 github:         peti/jailbreak-cabal
 category:       Distribution
 stability:      stable
-tested-with:    GHC > 7 && < 8.1
+tested-with:    GHC > 7 && <= 8.1
 description:    Strip version restrictions from build dependencies in Cabal files.
 
 ghc-options:    -Wall
