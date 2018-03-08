@@ -4,7 +4,11 @@ module Main ( main ) where
 
 import Distribution.Package
 import Distribution.PackageDescription
+#if MIN_VERSION_Cabal(2,2,0)
+import Distribution.PackageDescription.Parsec
+#else
 import Distribution.PackageDescription.Parse
+#endif
 import Distribution.PackageDescription.PrettyPrint
 #if MIN_VERSION_Cabal(1,25,0)
 import Distribution.Types.Dependency
@@ -15,7 +19,11 @@ import Distribution.Version
 import System.Environment
 
 main :: IO ()
+#if MIN_VERSION_Cabal(2,2,0)
+main = getArgs >>= mapM_ (\cabalFile -> readGenericPackageDescription silent cabalFile >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions)
+#else
 main = getArgs >>= mapM_ (\cabalFile -> readPackageDescription silent cabalFile >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions)
+#endif
 
 -- We don't relax version restrictions inside conditional statements.
 -- See https://github.com/peti/jailbreak-cabal/commit/99eac40deb481b185fd93fd307625369ff5e1ec0
