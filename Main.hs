@@ -59,7 +59,11 @@ class DependencyType a where
   relax :: a -> a
 
 instance DependencyType Dependency where
-  relax (Dependency d _) = Dependency d anyVersion
+#if MIN_VERSION_Cabal(2,5,0)
+  relax (Dependency d _ deps) = Dependency d anyVersion deps
+#else
+  relax (Dependency d _     ) = Dependency d anyVersion
+#endif
 
 #if MIN_VERSION_Cabal(1,25,0)
 
