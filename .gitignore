@@ -1,3 +1,5 @@
 # ignore built files
 
+/.*.environment.*
+/dist-newstyle/*
 /dist/*
