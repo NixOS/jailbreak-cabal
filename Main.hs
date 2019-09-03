@@ -1,19 +1,10 @@
-{-# LANGUAGE CPP #-}
-
 module Main ( main ) where
 
 import Distribution.Package
 import Distribution.PackageDescription
-#if MIN_VERSION_Cabal(2,2,0)
 import Distribution.PackageDescription.Parsec
-#else
-import Distribution.PackageDescription.Parse
-#endif
 import Distribution.PackageDescription.PrettyPrint
-#if MIN_VERSION_Cabal(1,25,0)
-import Distribution.Types.Dependency
 import Distribution.Types.LegacyExeDependency
-#endif
 import Distribution.Verbosity
 import Distribution.Version
 import System.Environment
@@ -25,9 +16,7 @@ main = getArgs >>= mapM_ (\cabalFile -> readGenericPackageDescription silent cab
 -- See https://github.com/peti/jailbreak-cabal/commit/99eac40deb481b185fd93fd307625369ff5e1ec0
 stripVersionRestrictions :: GenericPackageDescription -> GenericPackageDescription
 stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLibrary pkg)
-#if MIN_VERSION_Cabal(2,0,0)
                                    , condSubLibraries = map (\(n, l) -> (n, relaxLibraryTree l)) (condSubLibraries pkg)
-#endif
                                    , condExecutables = map (fmap relaxExeTree) (condExecutables pkg)
                                    , condTestSuites = map (fmap relaxTestTree) (condTestSuites pkg)
                                    }
@@ -62,20 +51,7 @@ class DependencyType a where
   relax :: a -> a
 
 instance DependencyType Dependency where
-#if MIN_VERSION_Cabal(2,5,0)
   relax (Dependency d _ deps) = Dependency d anyVersion deps
-#else
-  relax (Dependency d _     ) = Dependency d anyVersion
-#endif
-
-#if MIN_VERSION_Cabal(1,25,0)
 
 instance DependencyType LegacyExeDependency where
   relax (LegacyExeDependency d _) = LegacyExeDependency d anyVersion
-
-#endif
-
-#if !MIN_VERSION_Cabal(2,0,0)
-readGenericPackageDescription :: Verbosity -> String -> IO GenericPackageDescription
-readGenericPackageDescription = readPackageDescription
-#endif
