@@ -1,5 +1,5 @@
 name:                   jailbreak-cabal
-version:                1.3.4
+version:                1.3.5
 synopsis:               Strip version restrictions from Cabal files
 description:            Strip version restrictions from build dependencies in Cabal files.
 category:               Distribution
