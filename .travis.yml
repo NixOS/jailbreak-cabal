@@ -4,7 +4,7 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.3.20190815
+# version: 0.5.20180830
 #
 language: c
 dist: xenial
@@ -29,26 +29,23 @@ matrix:
     - compiler: ghc-8.8.1
       addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.8.1","cabal-install-3.0"]}}
     - compiler: ghc-8.6.5
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.6.5","cabal-install-2.4"]}}
+      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.6.5","cabal-install-3.0"]}}
     - compiler: ghc-8.4.4
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.4.4","cabal-install-2.4"]}}
+      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.4.4","cabal-install-3.0"]}}
     - compiler: ghc-8.2.2
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.2.2","cabal-install-2.4"]}}
+      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.2.2","cabal-install-3.0"]}}
     - compiler: ghc-8.0.2
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.0.2","cabal-install-2.4"]}}
+      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-8.0.2","cabal-install-3.0"]}}
     - compiler: ghc-7.10.3
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.10.3","cabal-install-2.4"]}}
+      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.10.3","cabal-install-3.0"]}}
     - compiler: ghc-7.8.4
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.8.4","cabal-install-2.4"]}}
+      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.8.4","cabal-install-3.0"]}}
     - compiler: ghc-7.6.3
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.6.3","cabal-install-2.4"]}}
-    - compiler: ghc-7.4.2
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.4.2","cabal-install-2.4"]}}
-    - compiler: ghc-7.0.4
-      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.0.4","cabal-install-2.4"]}}
+      addons: {"apt":{"sources":["hvr-ghc"],"packages":["ghc-7.6.3","cabal-install-3.0"]}}
 before_install:
   - HC=$(echo "/opt/$CC/bin/ghc" | sed 's/-/\//')
   - WITHCOMPILER="-w $HC"
+  - HADDOCK=$(echo "/opt/$CC/bin/haddock" | sed 's/-/\//')
   - HCPKG="$HC-pkg"
   - unset CC
   - CABAL=/opt/ghc/bin/cabal
@@ -103,7 +100,7 @@ install:
   - cat $CABALHOME/config
   - rm -fv cabal.project cabal.project.local cabal.project.freeze
   - travis_retry ${CABAL} v2-update -v
-  - if [ $HCNUMVER -ge 80600 ] && [ $HCNUMVER -lt 80800 ] ; then ${CABAL} v2-install $WITHCOMPILER -j2 hlint --constraint='hlint ==2.1.*' | color_cabal_output ; fi
+  - if [ $HCNUMVER -ge 80600 ] && [ $HCNUMVER -lt 80800 ] ; then (cd /tmp && ${CABAL} v2-install $WITHCOMPILER -j2 hlint --constraint='hlint ==2.1.*' | color_cabal_output) ; fi
   # Generate cabal.project
   - rm -rf cabal.project cabal.project.local cabal.project.freeze
   - touch cabal.project
