@@ -25,6 +25,9 @@ main = getArgs >>= mapM_ (\cabalFile -> readGenericPackageDescription silent cab
 -- See https://github.com/peti/jailbreak-cabal/commit/99eac40deb481b185fd93fd307625369ff5e1ec0
 stripVersionRestrictions :: GenericPackageDescription -> GenericPackageDescription
 stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLibrary pkg)
+#if MIN_VERSION_Cabal(2,0,0)
+                                   , condSubLibraries = map (\(n, l) -> (n, relaxLibraryTree l)) (condSubLibraries pkg)
+#endif
                                    , condExecutables = map (fmap relaxExeTree) (condExecutables pkg)
                                    , condTestSuites = map (fmap relaxTestTree) (condTestSuites pkg)
                                    }
