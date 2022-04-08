@@ -1,6 +1,10 @@
+{-# LANGUAGE CPP #-}
 module Main ( main ) where
 
 import Distribution.Package
+#if MIN_VERSION_Cabal_syntax(3,7,0)
+import Distribution.Simple.PackageDescription
+#endif
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Parsec
 import Distribution.PackageDescription.PrettyPrint
