@@ -4,10 +4,10 @@ synopsis:               Strip version restrictions from Cabal files
 description:            Strip version restrictions from build dependencies in Cabal files.
 category:               Distribution
 stability:              stable
-homepage:               https://github.com/peti/jailbreak-cabal
-bug-reports:            https://github.com/peti/jailbreak-cabal/issues
+homepage:               https://github.com/NixOS/jailbreak-cabal
+bug-reports:            https://github.com/NixOS/jailbreak-cabal/issues
 author:                 Peter Simons, Jeremy Shaw, Joel Taylor, Kosyrev Serge, Nikolay Amiantov, aszlig
-maintainer:             simons@cryp.to
+maintainer:             sternenseemann@systemli.org
 license:                BSD3
 license-file:           LICENSE
 build-type:             Simple
@@ -17,7 +17,7 @@ tested-with:            GHC == 7.6.3, GHC == 7.8.4, GHC == 7.10.3, GHC == 8.0.2,
 
 source-repository head
   type: git
-  location: https://github.com/peti/jailbreak-cabal
+  location: https://github.com/NixOS/jailbreak-cabal
 
 executable jailbreak-cabal
   main-is: Main.hs
