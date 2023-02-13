@@ -48,6 +48,7 @@ relaxTest t = t { testBuildInfo = relaxBuildInfo (testBuildInfo t) }
 
 relaxBuildInfo :: BuildInfo -> BuildInfo
 relaxBuildInfo bi = bi { buildTools = map relax (buildTools bi)
+                       , buildToolDepends = map relax (buildToolDepends bi)
                        , targetBuildDepends = map relax (targetBuildDepends bi)
                        }
 
@@ -56,6 +57,9 @@ class DependencyType a where
 
 instance DependencyType Dependency where
   relax (Dependency d _ deps) = Dependency d anyVersion deps
+
+instance DependencyType ExeDependency where
+  relax (ExeDependency d u _) = ExeDependency d u anyVersion
 
 instance DependencyType LegacyExeDependency where
   relax (LegacyExeDependency d _) = LegacyExeDependency d anyVersion
