@@ -1,0 +1,18 @@
+name: "nixpkgs CI"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  nix-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3.3.0
+    - uses: cachix/install-nix-action@v19
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+    - name: ci.nix
+      run: nix-build ci.nix
