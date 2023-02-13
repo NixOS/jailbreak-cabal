@@ -8,6 +8,7 @@ import Distribution.Simple.PackageDescription
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Parsec
 import Distribution.PackageDescription.PrettyPrint
+import Distribution.Types.ExeDependency
 import Distribution.Types.LegacyExeDependency
 import Distribution.Verbosity
 import Distribution.Version
