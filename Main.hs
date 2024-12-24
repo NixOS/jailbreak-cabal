@@ -15,7 +15,12 @@ import Distribution.Version
 import System.Environment
 
 main :: IO ()
-main = getArgs >>= mapM_ (\cabalFile -> readGenericPackageDescription silent cabalFile >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions)
+main = getArgs >>= mapM_ jailbreakFile
+
+jailbreakFile :: FilePath -> IO ()
+jailbreakFile cabalFile =
+  readGenericPackageDescription silent cabalFile
+  >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions
 
 -- We don't relax version restrictions inside conditional statements.
 -- See https://github.com/peti/jailbreak-cabal/commit/99eac40deb481b185fd93fd307625369ff5e1ec0
