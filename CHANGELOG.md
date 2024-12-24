@@ -1,5 +1,10 @@
 # Revision history for jailbreak-cabal
 
+## 1.4.1
+
+* Support building with `Cabal >= 3.14`. Adjustment for API changes that should not
+  change behavior. See [#25](https://github.com/NixOS/jailbreak-cabal/pull/25).
+
 ## 1.4
 
 * jailbreak-cabal will now also relax version constraints on `build-tool-depends`.
