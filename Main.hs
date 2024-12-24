@@ -10,6 +10,9 @@ import Distribution.PackageDescription.Parsec
 import Distribution.PackageDescription.PrettyPrint
 import Distribution.Types.ExeDependency
 import Distribution.Types.LegacyExeDependency
+#if MIN_VERSION_Cabal_syntax(3,14,0)
+import Distribution.Utils.Path
+#endif
 import Distribution.Verbosity
 import Distribution.Version
 import System.Environment
@@ -19,7 +22,15 @@ main = getArgs >>= mapM_ jailbreakFile
 
 jailbreakFile :: FilePath -> IO ()
 jailbreakFile cabalFile =
-  readGenericPackageDescription silent cabalFile
+  readGenericPackageDescription silent
+#if MIN_VERSION_Cabal(3,14,0)
+    -- Do not give a CWD directory, so the working dir of the process is used (like before).
+    -- Note: Passing a CWD directory is inadvisable since writeGenericPackageDescription
+    -- does not support it, so we'd get differing behavior.
+    Nothing (makeSymbolicPath cabalFile)
+#else
+    cabalFile
+#endif
   >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions
 
 -- We don't relax version restrictions inside conditional statements.
