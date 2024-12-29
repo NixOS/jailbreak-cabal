@@ -10,12 +10,19 @@ import Distribution.PackageDescription.Parsec
 import Distribution.PackageDescription.PrettyPrint
 import Distribution.Types.ExeDependency
 import Distribution.Types.LegacyExeDependency
+#if MIN_VERSION_Cabal(3,14,0)
+import Distribution.Utils.Path
+#endif
 import Distribution.Verbosity
 import Distribution.Version
 import System.Environment
 
 main :: IO ()
+#if MIN_VERSION_Cabal(3,14,0)
+main = getArgs >>= mapM_ (\cabalFile -> readGenericPackageDescription silent Nothing (unsafeMakeSymbolicPath cabalFile) >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions)
+#else
 main = getArgs >>= mapM_ (\cabalFile -> readGenericPackageDescription silent cabalFile >>= writeGenericPackageDescription cabalFile . stripVersionRestrictions)
+#endif
 
 -- We don't relax version restrictions inside conditional statements.
 -- See https://github.com/peti/jailbreak-cabal/commit/99eac40deb481b185fd93fd307625369ff5e1ec0
