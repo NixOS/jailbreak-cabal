@@ -1,18 +1,46 @@
 name: "nixpkgs CI"
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
+  get-ghc-versions:
+    name: Determine GHC versions to test
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.get-ghc-versions-step.outputs.versions }}
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: cachix/install-nix-action@v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: Get GHC Versions from ci.nix
+        id: get-ghc-versions-step
+        run: |
+          echo -n "versions=" >> "$GITHUB_OUTPUT"
+          nix-instantiate --eval --strict --json -E "builtins.attrNames (import ./ci.nix { })" >> "$GITHUB_OUTPUT"
+
   nix-build:
     runs-on: ubuntu-latest
+    needs:
+      - get-ghc-versions
+
+    strategy:
+      matrix:
+        version: ${{ fromJSON(needs.get-ghc-versions.outputs.versions) }}
+
     steps:
-    - uses: actions/checkout@v3.3.0
-    - uses: cachix/install-nix-action@v19
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
-    - name: ci.nix
-      run: nix-build ci.nix
+      - uses: actions/checkout@v4.2.2
+      - uses: cachix/install-nix-action@v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: nix-build ci.nix -A ${{ matrix.version }}
+        env:
+          ATTR: ${{ matrix.version }}
+        run: |
+          nix-build ci.nix -A "$ATTR"
