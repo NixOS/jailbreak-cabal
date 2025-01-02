@@ -5,12 +5,46 @@ let
   inherit (pkgs) lib haskell;
   inherit (haskell.lib.compose) buildFromSdist overrideCabal;
 
+  src = builtins.path {
+    name = "jailbreak-cabal-source";
+    path = ./.;
+  };
+
+  # Insert a bogus constraint into jailbreak-cabal's cabal file
+  # and immediately remove it using a given version of jailbreak-cabal
+  fixedBrokenSrc = jailbreak-cabal: pkgs.stdenvNoCC.mkDerivation {
+    name = "fixed-broken-jailbreak-cabal-source";
+
+    inherit src;
+    nativeBuildInputs = [ jailbreak-cabal ];
+
+    dontConfigure = true;
+
+    postPatch = ''
+      cp *.cabal backup
+
+      substituteInPlace *.cabal \
+        --replace-fail 'base < 5' 'base < 1'
+
+      diff -u backup *.cabal || true
+    '';
+
+    buildPhase = ''
+      jailbreak-cabal *.cabal
+      diff -u backup *.cabal || true
+    '';
+
+    installPhase = ''
+      cp -r . "$out"
+    '';
+  };
+
   expr =
     { mkDerivation, base, Cabal, Cabal-syntax, lib }:
     mkDerivation {
       pname = "jailbreak-cabal";
       version = "unstable-unknown";
-      src = ./.;
+      inherit src;
       isLibrary = false;
       isExecutable = true;
       executableHaskellDepends = [ base Cabal Cabal-syntax ];
@@ -39,5 +73,12 @@ lib.mapAttrs
         buildFromSdist
         # To better identify build failures
         (overrideCabal (old: { version = "${old.version}+ghc-${hpkgs.ghc.version}"; }))
+
+        # Rebuild jailbreak-cabal after inserting some broken constraints and removing it
+        # using the jailbreak-cabal we've just built.
+        (prev-jailbreak-cabal: haskell.lib.compose.overrideCabal (old: {
+          pname = "${old.pname}-from-broken-source";
+          src = fixedBrokenSrc prev-jailbreak-cabal;
+        }) prev-jailbreak-cabal)
       ])
   eligible
