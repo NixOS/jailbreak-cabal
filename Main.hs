@@ -21,8 +21,13 @@ main :: IO ()
 main = getArgs >>= mapM_ jailbreakFile
 
 jailbreakFile :: FilePath -> IO ()
-jailbreakFile cabalFile =
-  readGenericPackageDescription silent
+jailbreakFile cabalFile = do
+  readGenericPackageDescription
+#if MIN_VERSION_Cabal(3,17,0)
+    (mkVerbosity defaultVerbosityHandles silent)
+#else
+    silent
+#endif
 #if MIN_VERSION_Cabal(3,14,0)
     -- Do not give a CWD directory, so the working dir of the process is used (like before).
     -- Note: Passing a CWD directory is inadvisable since writeGenericPackageDescription
@@ -42,16 +47,27 @@ stripVersionRestrictions pkg = pkg { condLibrary = fmap relaxLibraryTree (condLi
                                    , condTestSuites = map (fmap relaxTestTree) (condTestSuites pkg)
                                    }
 
-relaxTreeConstraints :: CondTree v [Dependency] a -> CondTree v [Dependency] a
-relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct) }
+type CompatCondTree v comp =
+#if MIN_VERSION_Cabal(3,17,0)
+  CondTree v comp
+#else
+  CondTree v [Dependency] comp
+#endif
 
-relaxLibraryTree :: CondTree v [Dependency] Library -> CondTree v [Dependency] Library
+relaxTreeConstraints :: CompatCondTree v a -> CompatCondTree v a
+#if MIN_VERSION_Cabal(3,17,0)
+relaxTreeConstraints = id
+#else
+relaxTreeConstraints ct = ct { condTreeConstraints = map relax (condTreeConstraints ct) }
+#endif
+
+relaxLibraryTree :: CompatCondTree v Library -> CompatCondTree v Library
 relaxLibraryTree ct = relaxTreeConstraints $ ct { condTreeData = relaxLibrary (condTreeData ct) }
 
-relaxExeTree :: CondTree v [Dependency] Executable -> CondTree v [Dependency] Executable
+relaxExeTree :: CompatCondTree v Executable -> CompatCondTree v Executable
 relaxExeTree ct = relaxTreeConstraints $ ct { condTreeData = relaxExe (condTreeData ct) }
 
-relaxTestTree :: CondTree v [Dependency] TestSuite -> CondTree v [Dependency] TestSuite
+relaxTestTree :: CompatCondTree v TestSuite -> CompatCondTree v TestSuite
 relaxTestTree ct = relaxTreeConstraints $ ct { condTreeData = relaxTest (condTreeData ct) }
 
 relaxLibrary :: Library -> Library
