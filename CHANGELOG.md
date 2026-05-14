@@ -1,5 +1,11 @@
 # Revision history for jailbreak-cabal
 
+## 1.4.2
+
+* Support building with `Cabal >= 3.18`. This change should not affect
+  behavior in any significant way.
+  See [#29](https://github.com/NixOS/jailbreak-cabal/pull/29).
+
 ## 1.4.1
 
 * Support building with `Cabal >= 3.14`. Adjustment for API changes that should not
