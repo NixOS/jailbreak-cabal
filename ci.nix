@@ -1,5 +1,5 @@
 # Should work with any nixpkgs revision, so we don't care
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs ? import <nixpkgs> { config.allowAliases = false; } }:
 
 let
   inherit (pkgs) lib haskell;
